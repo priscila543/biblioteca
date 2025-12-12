@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Gerenciar Livros</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body style="background: linear-gradient(135deg, #ad7b4f, #6e320f); min-height: 100vh;">
+
+<div class="container mt-4">
+
+  <a href="/inicio" class="btn btn-secondary mb-3">← Voltar</a>
+  <h2 class="text-center mb-4">Gerenciar Livros</h2>
+
+  <div class="card p-3 mb-4" style="
+    background: 
+      linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+      url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    border: none;
+  ">
+    <h5 class="fw-bold">Cadastrar novo livro</h5>
+
+    <form action="/livros" method="POST" class="row g-3">
+
+      <div class="col-md-4">
+        <label>Nome do Livro</label>
+        <input name="nome" class="form-control" required>
+      </div>
+
+      <div class="col-md-4">
+        <label>Autor</label>
+        <input name="autor" class="form-control" required>
+      </div>
+
+      <div class="col-md-6">
+        <label>URL da Capa</label>
+        <input name="capa" class="form-control">
+      </div>
+
+      <div class="col-md-3">
+        <label>Categoria</label>
+        <select name="categoria" class="form-select">
+          <option value="romance">Romance</option>
+          <option value="ficcao">Ficção Científica</option>
+          <option value="infantil">Infantil</option>
+        </select>
+      </div>
+
+      <div class="col-md-3 d-flex align-items-end">
+        <button class="btn btn-dark w-100">Cadastrar</button>
+      </div>
+
+    </form>
+  </div>
+
+  <h4 class="fw-bold mt-4">Livros cadastrados</h4>
+
+  <div class="row g-3 mt-2">
+
+    <% livros.forEach(livro => { %>
+      <div class="col-md-3">
+        <div class="card sombra">
+
+          <img src="<%= livro.capa %>" class="card-img-top" style="height:200px; object-fit:cover;">
+
+          <div class="card-body">
+            <h6 class="fw-bold"><%= livro.nome %></h6>
+            <small class="text-muted"><%= livro.autor %></small><br>
+
+            <a href="/livros/editar/<%= livro.id %>" class="btn btn-warning btn-sm mt-2 w-100">Editar</a>
+            <a href="/livros/excluir/<%= livro.id %>" class="btn btn-danger btn-sm mt-1 w-100">Excluir</a>
+          </div>
+
+        </div>
+      </div>
+    <% }) %>
+
+  </div>
+
+</div>
+
+</body>
+</html>
