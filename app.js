@@ -17,7 +17,6 @@ app.use(session({
   saveUninitialized: false
 }));
 
-// Middleware de autenticação
 function auth(req, res, next) {
   if (!req.session.user) return res.redirect("/");
   next();
@@ -251,5 +250,94 @@ app.get("/admin/usuarios", auth, (req, res) => {
     res.render("usuariosAdmin", { dados: rows });
   });
 });
+
+
+// API
+
+app.get("/api/livros", (req, res) => {
+  db.all("SELECT * FROM livros", [], (err, rows) => {
+    if (err) return res.json({ erro: "Erro ao listar livros" });
+    res.json(rows);
+  });
+});
+
+app.get("/api/livros/:id", (req, res) => {
+  db.get("SELECT * FROM livros WHERE id = ?", [req.params.id], (err, row) => {
+    if (err) return res.json({ erro: "Erro ao buscar livro" });
+    if (!row) return res.json({ erro: "Livro não encontrado" });
+    res.json(row);
+  });
+});
+
+app.post("/api/login", (req, res) => {
+  const { email, senha } = req.body;
+
+  db.get(
+    "SELECT * FROM usuarios WHERE email = ? AND senha = ?",
+    [email, senha],
+    (err, row) => {
+      if (err) return res.json({ erro: "Erro ao fazer login" });
+
+      if (!row) {
+        return res.json({ erro: "Credenciais inválidas" });
+      }
+
+      res.json({
+        mensagem: "Login bem-sucedido",
+        usuario: {
+          id: row.id,
+          nome: row.nome,
+          email: row.email
+        }
+      });
+    }
+  );
+});
+
+app.post("/api/alugar/:id", (req, res) => {
+  const { usuario, dias } = req.body;
+  const id = req.params.id;
+
+  if (!dias || dias <= 0)
+    return res.json({ erro: "Dias inválidos" });
+
+  db.get("SELECT alugado FROM livros WHERE id = ?", [id], (err, row) => {
+    if (row.alugado === 1) {
+      return res.json({ erro: "Livro já está alugado" });
+    }
+
+    const data = new Date();
+    data.setDate(data.getDate() + parseInt(dias));
+    const dataDev = data.toLocaleDateString("pt-BR");
+
+    db.run(
+      `UPDATE livros SET alugado = 1, usuarioAlugou = ?, dataDevolucao = ? WHERE id = ?`,
+      [usuario, dataDev, id],
+      function (err) {
+        if (err) return res.json({ erro: "Erro ao alugar" });
+
+        res.json({
+          mensagem: "Livro alugado com sucesso!",
+          devolucao: dataDev
+        });
+      }
+    );
+  });
+});
+
+app.post("/api/devolver/:id", (req, res) => {
+  const id = req.params.id;
+
+  db.run(
+    `UPDATE livros SET alugado = 0, usuarioAlugou = null, dataDevolucao = null WHERE id = ?`,
+    [id],
+    function (err) {
+      if (err) return res.json({ erro: "Erro ao devolver" });
+
+      res.json({ mensagem: "Livro devolvido com sucesso!" });
+    }
+  );
+});
+
 
 app.listen(3000, () => console.log("Servidor rodando na porta 3000"));
